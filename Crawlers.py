@@ -3,7 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+import re
 
 class PsychologistsCrawler:
     def __init__(self, hostname, chrome_binary_location=None, executable_path=r'C:/Users/irina/AppData/Local/Programs/Python/Python39/chromedriver.exe'):
@@ -19,6 +19,23 @@ class PsychologistsCrawler:
             self.driver = webdriver.Chrome(executable_path)
 
         self.driver.get(hostname)
+
+        # Find the number of psychologists
+        try:
+            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located(
+                (By.XPATH, '//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')))
+        finally:
+            nr_of_psychologists_element = self.driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')[0]
+            nr_of_psychologists = int(nr_of_psychologists_element.text.split()[6])
+            print(nr_of_psychologists)
+
+        page_size = re.search('Pagesize[0-9]+&', hostname)
+        print(page_size)
+
+        self.driver.quit()
+
+        # Open the webpage with all psychologists
+        # self.driver.get()
 
     def get_psychologist_data(self):
         try:
