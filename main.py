@@ -1,3 +1,7 @@
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
+
 from Crawlers import PsychologistsCrawler
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -11,8 +15,6 @@ options = Options()
 options.binary_location = chrome_binary_location
 driver = webdriver.Chrome(options=options, executable_path=executable_path)
 
-driver.implicitly_wait(10)
-
 driver.get(hostname)
 
 # Find the number of all psychologists
@@ -20,9 +22,12 @@ driver.get(hostname)
 #       somehow Sundhed.dk servers actively refuse reopening the webpage with the modified attribute.
 #       However, when it is created here and passed in as an argument when creating the PsychologistsCrawler
 #       object, the trick passes through
-nr_of_psychologists_element = driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')[0]
-nr_of_psychologists_str = nr_of_psychologists_element.text.split()[6]
-nr_of_psychologists = int(nr_of_psychologists_str)
+try:
+    WebDriverWait(driver, 5).until(expected_conditions.presence_of_element_located((By.XPATH, '//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')))
+finally:
+    nr_of_psychologists_element = driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')[0]
+    nr_of_psychologists_str = nr_of_psychologists_element.text.split()[6]
+    nr_of_psychologists = int(nr_of_psychologists_str)
 
 driver.quit()
 

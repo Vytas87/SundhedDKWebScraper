@@ -27,7 +27,7 @@ class PsychologistsCrawler:
         self.driver.get(self.hostname)
 
         try:
-            WebDriverWait(self.driver, 10).until(expected_conditions.presence_of_element_located((By.XPATH, '//*[@id="scrollToResultat"]/div/div[2]/div')))
+            WebDriverWait(self.driver, 15).until(expected_conditions.presence_of_element_located((By.XPATH, '//*[@id="scrollToResultat"]/div/div[2]/div')))
         finally:
             for psychologist in range(1, nr_of_psychologists + 1):
                 try:
