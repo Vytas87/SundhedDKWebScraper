@@ -1,15 +1,16 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
-
 from Crawlers import PsychologistsCrawler
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
+
 import re
 
 hostname = 'https://www.sundhed.dk/borger/guides/find-behandler/?Page=1&Pagesize=100&RegionId=0&MunicipalityId=0&Sex=0&AgeGroup=0&DisabilityFriendlyAccess=false&GodAdgang=false&EMailConsultation=false&EMailAppointmentReservation=false&EMailPrescriptionRenewal=false&TakesNewPatients=false&Name=psykolog&TreatmentAtHome=false&WaitTime=false'
 chrome_binary_location = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
-executable_path=r'C:/Users/irina/AppData/Local/Programs/Python/Python39/chromedriver.exe'
+executable_path='C:/Users/irina/AppData/Local/Programs/Python/Python39/chromedriver.exe'
 
 options = Options()
 options.binary_location = chrome_binary_location
@@ -31,6 +32,7 @@ finally:
 
 driver.quit()
 
+# Updating the 'hostname' that would display all psychologists in a single page, allowing to avoid logic for clicking buttons
 hostname = re.sub('Pagesize=[0-9]+', 'Pagesize=' + nr_of_psychologists_str, hostname)
 
 psychologists_crawler = PsychologistsCrawler(hostname, executable_path, chrome_binary_location=chrome_binary_location)
