@@ -1,63 +1,66 @@
+import pandas as pandas
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import re
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
+
 
 class PsychologistsCrawler:
-    def __init__(self, hostname, chrome_binary_location=None, executable_path=r'C:/Users/irina/AppData/Local/Programs/Python/Python39/chromedriver.exe'):
+    def __init__(self, hostname, executable_path, chrome_binary_location=None):
         self.hostname = hostname
-        self._executable_path = executable_path
+        self.executable_path = executable_path
 
         if chrome_binary_location is not None:
             self.chrome_binary_location = chrome_binary_location
             options = Options()
             options.binary_location = self.chrome_binary_location
-            self.driver = webdriver.Chrome(options=options, executable_path=executable_path)
+            self.driver = webdriver.Chrome(options=options, executable_path=self.executable_path)
         else:
-            self.driver = webdriver.Chrome(executable_path)
+            self.driver = webdriver.Chrome(self.executable_path)
 
-        self.driver.get(hostname)
+    def get_psychologist_data(self, nr_of_psychologists=10):
 
-        # Find the number of psychologists
+        psychologists_data = pandas.DataFrame(columns=['Name', 'Phone', 'Street', 'PostBox'])
+
+        self.driver.get(self.hostname)
+
         try:
-            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located(
-                (By.XPATH, '//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')))
+            WebDriverWait(self.driver, 10).until(expected_conditions.presence_of_element_located((By.XPATH, '//*[@id="scrollToResultat"]/div/div[2]/div')))
         finally:
-            nr_of_psychologists_element = self.driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')[0]
-            nr_of_psychologists = int(nr_of_psychologists_element.text.split()[6])
-            print(nr_of_psychologists)
+            for psychologist in range(1, nr_of_psychologists + 1):
+                try:
+                    name_element = self.driver.find_element_by_xpath(str.format('//*[@id="scrollToResultat"]/div/div[2]/div/div[{}]/search-result-item/h3/a', psychologist))
+                    name = name_element.text
+                except NoSuchElementException:
+                    name = '-'
 
-        page_size = re.search('Pagesize[0-9]+&', hostname)
-        print(page_size)
+                try:
+                    phone_element = self.driver.find_element_by_xpath(str.format('//*[@id="scrollToResultat"]/div/div[2]/div/div[{}]/search-result-item/div[1]/div[1]/p/span/a', psychologist))
+                    phone = phone_element.text
+                except NoSuchElementException:
+                    phone = '-'
+
+                try:
+                    address_street_element = self.driver.find_element_by_xpath(str.format('//*[@id="scrollToResultat"]/div/div[2]/div/div[{}]/search-result-item/div[1]/div[1]/div[2]/div[1]', psychologist))
+                    address_street = address_street_element.text
+                except NoSuchElementException:
+                    address_street = '-'
+
+                try:
+                    address_postbox_element = self.driver.find_element_by_xpath(str.format('//*[@id="scrollToResultat"]/div/div[2]/div/div[{}]/search-result-item/div[1]/div[1]/div[2]/div[2]', psychologist))
+                    address_postbox = address_postbox_element.text
+                except NoSuchElementException:
+                    address_postbox = '-'
+
+                psychologists_data.loc[len(psychologists_data)] = [name, phone, address_street, address_postbox]
+                psychologists_data.to_csv('Psychologists data.csv', header=True, sep=",")
+
+                # The following was used for testing
+                # print('{:5}. {:10}{}'.format(psychologist, 'Name:', name))
+                # print('{:7}{:10}{}'.format('', 'Phone:', phone))
+                # print('{:7}{:10}{}'.format('', 'Street:', address_street))
+                # print('{:7}{:10}{}'.format('', 'PostBox:', address_postbox))
 
         self.driver.quit()
-
-        # Open the webpage with all psychologists
-        # self.driver.get()
-
-    def get_psychologist_data(self):
-        try:
-            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located(
-                (By.XPATH, '//*[@id="scrollToResultat"]/div/div[2]/div/div[3]/search-result-item/h3/a')))
-        finally:
-            name_element = self.driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[2]/div/div[3]/search-result-item/h3/a')[0]
-            name = name_element.text
-
-            phone_element = self.driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[2]/div/div[3]/search-result-item/div[1]/div[1]/p/span/a')[0]
-            phone = phone_element.text
-
-            address_street_element = self.driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[2]/div/div[3]/search-result-item/div[1]/div[1]/div[2]/div[1]')[0]
-            address_street = address_street_element.text
-
-            address_postbox_element = self.driver.find_elements_by_xpath(
-                '//*[@id="scrollToResultat"]/div/div[2]/div/div[3]/search-result-item/div[1]/div[1]/div[2]/div[2]')[0]
-            address_postbox = address_postbox_element.text
-
-            self.driver.quit()
-
-            print('{:10}{}'.format('Name:', name))
-            print('{:10}{}'.format('Phone:', phone))
-            print('{:10}{}'.format('Street:', address_street))
-            print('{:10}{}'.format('PostBox:', address_postbox))
