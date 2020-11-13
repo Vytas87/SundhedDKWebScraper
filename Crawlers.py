@@ -6,9 +6,10 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 import pandas as pandas
 
-
+# A description  of the class here
 class PsychologistsCrawler:
-    def __init__(self, hostname, executable_path, chrome_binary_location=None):
+    # More comments about the attributes
+    def __init__(self, hostname: str, executable_path: str, chrome_binary_location: str = None):
         self.hostname = hostname
         self.executable_path = executable_path
 
@@ -20,12 +21,15 @@ class PsychologistsCrawler:
         else:
             self.driver = webdriver.Chrome(self.executable_path)
 
-    def get_psychologist_data(self, nr_of_psychologists=10):
+    # A description of the method
+    def get_psychologist_data(self, nr_of_psychologists: int = 10) -> None:
 
         psychologists_data = pandas.DataFrame(columns=['Name', 'Phone', 'Street', 'PostBox'])
 
         self.driver.get(self.hostname)
 
+        # Implement exponential decay for robustness
+        # Also implement except instead of finally
         try:
             WebDriverWait(self.driver, 15).until(expected_conditions.presence_of_element_located((By.XPATH, '//*[@id="scrollToResultat"]/div/div[2]/div')))
         finally:

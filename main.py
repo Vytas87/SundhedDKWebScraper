@@ -1,3 +1,5 @@
+from selenium.common.exceptions import TimeoutException
+
 from Crawlers import PsychologistsCrawler
 
 from selenium import webdriver
@@ -8,6 +10,7 @@ from selenium.webdriver.common.by import By
 
 import re
 
+# More comments about the variables
 hostname = 'https://www.sundhed.dk/borger/guides/find-behandler/?Page=1&Pagesize=100&RegionId=0&MunicipalityId=0&Sex=0&AgeGroup=0&DisabilityFriendlyAccess=false&GodAdgang=false&EMailConsultation=false&EMailAppointmentReservation=false&EMailPrescriptionRenewal=false&TakesNewPatients=false&Name=psykolog&TreatmentAtHome=false&WaitTime=false'
 chrome_binary_location = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
 executable_path='C:/Users/irina/AppData/Local/Programs/Python/Python39/chromedriver.exe'
@@ -25,10 +28,13 @@ driver.get(hostname)
 #       object, the trick passes through
 try:
     WebDriverWait(driver, 5).until(expected_conditions.presence_of_element_located((By.XPATH, '//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')))
-finally:
     nr_of_psychologists_element = driver.find_elements_by_xpath('//*[@id="scrollToResultat"]/div/div[1]/div[1]/span[1]/p')[0]
     nr_of_psychologists_str = nr_of_psychologists_element.text.split()[6]
     nr_of_psychologists = int(nr_of_psychologists_str)
+# Specify the exceptions - TimeoutException, NoSuchElement
+# Also the case when the loaded page is an error page
+except TimeoutException:
+    print('TimeoutException: The webpage did not load')
 
 driver.quit()
 
